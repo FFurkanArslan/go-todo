@@ -1,0 +1,105 @@
+---
+- name: Set up infrastructure
+  hosts: all
+  become: yes
+
+  vars:
+    go_version: "1.17"
+    mysql_root_password: "secure_password"
+    app_dir: "/opt/go-todo"
+    nginx_config_dir: "/etc/nginx/sites-available"
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+
+    - name: Install common dependencies
+      apt:
+        name:
+          - git
+          - nginx
+        state: present
+
+    - name: Install MySQL server
+      apt:
+        name: mysql-server
+        state: present
+      when: "'furkan-mysql' in inventory_hostname"
+
+    - name: Set MySQL root password
+      mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+      when: "'furkan-mysql' in inventory_hostname"
+
+    - name: Install Go
+      apt:
+        name: "golang-{{ go_version }}"
+        state: present
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Clone go-todo repository
+      git:
+        repo: "https://github.com/ichtrojan/go-todo.git"
+        dest: "{{ app_dir }}"
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Copy .env file
+      copy:
+        src: "{{ app_dir }}/.env.example"
+        dest: "{{ app_dir }}/.env"
+        remote_src: yes
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Configure .env file
+      lineinfile:
+        path: "{{ app_dir }}/.env"
+        regexp: "{{ item.regexp }}"
+        line: "{{ item.line }}"
+      loop:
+        - { regexp: '^DB_HOST=', line: 'DB_HOST=furkan-mysql' }
+        - { regexp: '^DB_USER=', line: 'DB_USER=root' }
+        - { regexp: '^DB_PASSWORD=', line: 'DB_PASSWORD={{ mysql_root_password }}' }
+        - { regexp: '^DB_NAME=', line: 'DB_NAME=go_todo' }
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Install go-todo dependencies
+      command: go mod download
+      args:
+        chdir: "{{ app_dir }}"
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Build go-todo application
+      command: go build -o go-todo
+      args:
+        chdir: "{{ app_dir }}"
+      when: "'furkan-backend' in inventory_hostname"
+
+    - name: Configure Nginx as reverse proxy
+      template:
+        src: nginx_reverse_proxy.conf.j2
+        dest: "{{ nginx_config_dir }}/go-todo"
+      notify: Reload Nginx
+      when: "'furkan-frontend' in inventory_hostname"
+
+    - name: Enable Nginx site
+      file:
+        src: "{{ nginx_config_dir }}/go-todo"
+        dest: "/etc/nginx/sites-enabled/go-todo"
+        state: link
+      notify: Reload Nginx
+      when: "'furkan-frontend' in inventory_hostname"
+
+    - name: Install Jenkins
+      apt:
+        name: jenkins
+        state: present
+      when: "'furkan-jenkins' in inventory_hostname"
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
