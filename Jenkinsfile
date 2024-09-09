@@ -2,11 +2,9 @@ pipeline {
     agent any
 
     environment {
-        // Docker Registry credentials stored in Jenkins
         DOCKER_REGISTRY_CREDENTIALS = credentials('docker-registry-credentials')
-        REGISTRY = 'docker.io/ffurkanarslan' // e.g., docker.io
-        IMAGE_FRONTEND = "${REGISTRY}/furkan-frontend"
-        IMAGE_BACKEND = "${REGISTRY}/furkan-backend"
+        REGISTRY = 'docker.io/ffurkanarslan'
+        IMAGE_NAME = "${REGISTRY}/furkan-app"
     }
 
     stages {
@@ -16,11 +14,10 @@ pipeline {
             }
         }
 
-        stage('Build Docker Images') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t $IMAGE_FRONTEND:latest -f frontend/Dockerfile .'
-                    sh 'docker build -t $IMAGE_BACKEND:latest -f backend/Dockerfile .'
+                    sh 'docker build -t $IMAGE_NAME:latest .'
                 }
             }
         }
@@ -36,8 +33,7 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 script {
-                    sh 'docker push $IMAGE_FRONTEND:latest'
-                    sh 'docker push $IMAGE_BACKEND:latest'
+                    sh 'docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -45,8 +41,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'gcloud compute ssh furkan-frontend --zone us-central1-a --command "docker run -d -p 80:80 $IMAGE_FRONTEND:latest"'
-                    sh 'gcloud compute ssh furkan-backend --zone us-central1-a --command "docker run -d -p 8080:8080 $IMAGE_BACKEND:latest"'
+                    sh 'docker-compose up -d'
                 }
             }
         }
