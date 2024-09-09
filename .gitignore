@@ -2,3 +2,4 @@
 logs/
 .env
 ansible/inventory.ini
+terraform/
