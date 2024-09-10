@@ -32,11 +32,11 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Registry') {
+        stage('Check .env file') {
             steps {
                 script {
-                    // Push the Docker image to Docker Registry with sudo
-                    sh 'sudo docker push $IMAGE_NAME:latest'
+                    // Verify the existence of the .env file
+                    sh 'ls -l .env || echo ".env file not found!"'
                 }
             }
         }
