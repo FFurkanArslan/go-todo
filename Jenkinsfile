@@ -72,7 +72,7 @@ pipeline {
                         string(credentialsId: 'db-password', variable: 'DB_PASS'),
                         string(credentialsId: 'db-name', variable: 'DB_NAME'),
                         string(credentialsId: 'port', variable: 'PORT'),
-                        string(credentialsId: 'backend-instance-ip', variable: 'APP_INSTANCE_IP')
+                        string(credentialsId: 'frontend-instance-ip', variable: 'APP_INSTANCE_IP')
                     ]) {
                         sh '''
                         export DB_HOST=${DB_HOST}
