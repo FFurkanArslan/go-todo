@@ -11,6 +11,7 @@ pipeline {
         DB_PASSWORD = credentials('db-password')
         DB_NAME = credentials('db-name')
         PORT = credentials('port')
+        APP_INSTANCE_IP = credentials('frontend-instance-ip') 
     }
 
     stages {
@@ -79,7 +80,8 @@ pipeline {
                         export DB_NAME=${DB_NAME}
                         export PORT=${PORT}
                         export IMAGE_NAME=${IMAGE_NAME}
-        
+                        export APP_INSTANCE_IP=${APP_INSTANCE_IP}
+                        
                         sudo -E docker-compose -f docker-compose.yml down
                         sudo -E docker-compose -f docker-compose.yml up -d --build
                         '''
