@@ -64,7 +64,7 @@ pipeline {
                     sh '''
                     sudo docker run -d --name furkan-nginx \
                         --network furkan-network \
-                        -v $(pwd)/nginx_reverse_proxy.conf:/etc/nginx/conf.d/default.conf \
+                        -v $(pwd)/nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf \
                         -p 80:80 \
                         nginx:alpine
                     '''
