@@ -43,6 +43,19 @@ pipeline {
             }
         }
 
+        stage('Setup Docker Network') {
+            steps {
+                script {
+                    // Create Docker network if it doesn't exist
+                    sh '''
+                    if ! sudo docker network inspect furkan-network > /dev/null 2>&1; then
+                        sudo docker network create furkan-network
+                    fi
+                    '''
+                }
+            }
+        }
+
         stage('Deploy App') {
             steps {
                 script {
@@ -80,9 +93,3 @@ pipeline {
                 script {
                     // Optionally, you can add cleanup commands if needed
                     // For example, remove old images or containers
-                    sh 'sudo docker system prune -f'
-                }
-            }
-        }
-    }
-}
