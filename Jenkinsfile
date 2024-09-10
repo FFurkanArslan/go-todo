@@ -17,8 +17,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image for the application using Docker Compose
-                    sh 'sudo docker-compose build app'
+                    // Build the Docker image for the application
+                    sh 'sudo docker build -t $IMAGE_NAME:latest .'
                 }
             }
         }
@@ -27,7 +27,9 @@ pipeline {
             steps {
                 script {
                     // Log in to Docker registry
-                    sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | sudo docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
+                    withCredentials([usernamePassword(credentialsId: 'docker-registry-credentials', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
+                        sh 'echo $DOCKER_PASSWORD | sudo docker login -u $DOCKER_USERNAME --password-stdin'
+                    }
                 }
             }
         }
@@ -35,8 +37,7 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 script {
-                    // Tag and push the Docker image to Docker Registry
-                    sh 'sudo docker tag docker.io/ffurkanarslan/furkan-app:latest $IMAGE_NAME:latest'
+                    // Push the Docker image to Docker Registry
                     sh 'sudo docker push $IMAGE_NAME:latest'
                 }
             }
@@ -46,7 +47,7 @@ pipeline {
             steps {
                 script {
                     // Deploy using Docker Compose
-                    sh 'sudo docker-compose up -d'
+                    sh 'sudo docker-compose -f docker-compose.yml up -d'
                 }
             }
         }
@@ -56,6 +57,7 @@ pipeline {
                 script {
                     // Optionally, you can add cleanup commands if needed
                     // For example, remove old images or containers
+                    sh 'sudo docker system prune -f'
                 }
             }
         }
