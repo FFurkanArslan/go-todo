@@ -56,33 +56,17 @@ pipeline {
             }
         }
 
-        stage('Deploy App') {
+        stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    // Stop and remove any existing container
-                    sh 'sudo docker rm -f furkan-app || true'
-
-                    // Run the new Docker container
+                    // Stop and remove existing containers if they exist
                     sh '''
-                    sudo docker run -d --name furkan-app --network furkan-network \
-                    -e DB_HOST=**** -e DB_USER=**** -e DB_PASSWORD=**** -e DB_NAME=**** \
-                    -e PORT=8080 -p 8081:8080 $IMAGE_NAME:latest
+                    sudo docker-compose -f docker-compose.yml down
                     '''
-                }
-            }
-        }
 
-        stage('Deploy Nginx') {
-            steps {
-                script {
-                    // Stop and remove any existing Nginx container
-                    sh 'sudo docker rm -f furkan-nginx || true'
-
-                    // Run the Nginx container
+                    // Start up new containers with Docker Compose
                     sh '''
-                    sudo docker run -d --name furkan-nginx --network furkan-network \
-                    -v /go-todo/nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf \
-                    -p 80:80 nginx:alpine
+                    sudo docker-compose -f docker-compose.yml up -d
                     '''
                 }
             }
