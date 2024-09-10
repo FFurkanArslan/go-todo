@@ -44,9 +44,10 @@ pipeline {
         stage('Deploy App') {
             steps {
                 script {
-                    // Deploy the application using docker run, pass the .env file, and expose the necessary port
+                    // Deploy the application using docker run and attach to the custom network
                     sh '''
                     docker run -d --name furkan-app \
+                        --network furkan-network \
                         --env-file .env \
                         -p 8081:8080 \
                         $IMAGE_NAME:latest
@@ -61,6 +62,7 @@ pipeline {
                     // Deploy Nginx as reverse proxy, mount the config file, and expose port 80
                     sh '''
                     docker run -d --name furkan-nginx \
+                        --network furkan-network \
                         -v $(pwd)/nginx_reverse_proxy.conf:/etc/nginx/conf.d/default.conf \
                         -p 80:80 \
                         nginx:alpine
