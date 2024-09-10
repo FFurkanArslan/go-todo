@@ -1,5 +1,5 @@
 upstream app {
-    server app:4040;
+    server ${APP_INSTANCE_IP}:4040;
 }
 
 server {
