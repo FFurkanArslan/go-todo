@@ -81,7 +81,7 @@ pipeline {
                     // Run the Nginx container
                     sh '''
                     sudo docker run -d --name furkan-nginx --network furkan-network \
-                    -v /home/quiblord/workspace/todo/app/pipeline/nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf \
+                    -v /go-todo/nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf \
                     -p 80:80 nginx:alpine
                     '''
                 }
