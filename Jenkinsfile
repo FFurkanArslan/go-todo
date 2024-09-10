@@ -83,8 +83,11 @@ pipeline {
                         export APP_INSTANCE_IP=${APP_INSTANCE_IP}
                         export IMAGE_NAME=${IMAGE_NAME}
         
-                        # Substitute the APP_INSTANCE_IP in the Nginx configuration
-                        envsubst < ./nginx.conf.template > /etc/nginx/nginx.conf
+                         # Substitute the APP_INSTANCE_IP in the Nginx configuration
+                        sudo envsubst < /opt/go-todo/nginx.conf.template > /etc/nginx/nginx.conf
+        
+                        # Restart Nginx to apply new configuration
+                        sudo systemctl restart nginx
         
                         sudo -E docker-compose -f docker-compose.yml down
                         sudo -E docker-compose -f docker-compose.yml up -d --build
