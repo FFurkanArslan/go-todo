@@ -5,23 +5,18 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS = credentials('docker-registry-credentials')
         REGISTRY = 'docker.io/ffurkanarslan'
         IMAGE_NAME = "${REGISTRY}/furkan-app"
+
+        DB_HOST = credentials('db-host')
+        DB_USER = credentials('db-user')
+        DB_PASSWORD = credentials('db-password')
+        DB_NAME = credentials('db-name')
+        PORT = credentials('port')
     }
 
     stages {
         stage('Checkout') {
             steps {
                 git 'https://github.com/FFurkanArslan/go-todo'
-            }
-        }
-
-        stage('Copy .env from Backend Instance') {
-            steps {
-                script {
-                    // Copy .env file from backend instance to Jenkins workspace
-                    sh '''
-                    scp quiblord@furkan-backend:/opt/go-todo/.env .
-                    '''
-                }
             }
         }
 
@@ -43,15 +38,6 @@ pipeline {
             }
         }
 
-        stage('Push to Docker Registry') {
-            steps {
-                script {
-                    // Push the Docker image to Docker Registry
-                    sh 'sudo docker push $IMAGE_NAME:latest'
-                }
-            }
-        }
-
         stage('Deploy App') {
             steps {
                 script {
@@ -59,8 +45,12 @@ pipeline {
                     sh '''
                     sudo docker run -d --name furkan-app \
                         --network furkan-network \
-                        --env-file .env \
-                        -p 8081:8080 \
+                        -e DB_HOST=$DB_HOST \
+                        -e DB_USER=$DB_USER \
+                        -e DB_PASSWORD=$DB_PASSWORD \
+                        -e DB_NAME=$DB_NAME \
+                        -e PORT=$PORT \
+                        -p 8081:4040 \
                         $IMAGE_NAME:latest
                     '''
                 }
