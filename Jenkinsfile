@@ -57,19 +57,29 @@ pipeline {
         }
 
         stage('Deploy with Docker Compose') {
-            steps {
-                script {
-                    // Stop and remove existing containers if they exist
-                    sh '''
-                    sudo docker-compose -f docker-compose.yml down
-                    '''
+    steps {
+        script {
+            // Export environment variables
+            withCredentials([
+                string(credentialsId: 'db-host', variable: 'DB_HOST'),
+                string(credentialsId: 'db-user', variable: 'DB_USER'),
+                string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
+                string(credentialsId: 'db-name', variable: 'DB_NAME'),
+                string(credentialsId: 'port', variable: 'PORT')
+            ]) {
+                sh '''
+                export DB_HOST=$DB_HOST
+                export DB_USER=$DB_USER
+                export DB_PASSWORD=$DB_PASSWORD
+                export DB_NAME=$DB_NAME
+                export PORT=$PORT
 
-                    // Start up new containers with Docker Compose
-                    sh '''
-                    sudo docker-compose -f docker-compose.yml up -d
-                    '''
-                }
+                sudo docker-compose -f docker-compose.yml down
+                sudo docker-compose -f docker-compose.yml up -d
+                '''
             }
         }
     }
+}
+
 }
