@@ -78,6 +78,7 @@ pipeline {
                         echo "DB_PASS=${DB_PASS}" >> .env
                         echo "DB_NAME=${DB_NAME}" >> .env
                         echo "PORT=${PORT}" >> .env
+                        echo "IMAGE_NAME=${IMAGE_NAME}" >> .env
         
                         sudo docker-compose -f docker-compose.yml down
                         sudo docker-compose -f docker-compose.yml up -d
