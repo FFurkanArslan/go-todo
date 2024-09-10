@@ -5,6 +5,12 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS = credentials('docker-registry-credentials')
         REGISTRY = 'docker.io/ffurkanarslan'
         IMAGE_NAME = "${REGISTRY}/furkan-app"
+
+        DB_HOST = credentials('db-host')
+        DB_USER = credentials('db-user')
+        DB_PASSWORD = credentials('db-password')
+        DB_NAME = credentials('db-name')
+        PORT = credentials('port')
     }
 
     stages {
@@ -17,7 +23,6 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image for the application
                     sh 'sudo docker build -t $IMAGE_NAME:latest .'
                 }
             }
@@ -26,7 +31,6 @@ pipeline {
         stage('Login to Docker Registry') {
             steps {
                 script {
-                    // Log in to the Docker registry
                     sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | sudo docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
                 }
             }
@@ -35,7 +39,6 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 script {
-                    // Push the Docker image to Docker Registry
                     sh 'sudo docker push $IMAGE_NAME:latest'
                 }
             }
@@ -44,14 +47,9 @@ pipeline {
         stage('Cleanup') {
             steps {
                 script {
-                    // Remove existing containers if they exist
                     sh '''
-                    if [ $(sudo docker ps -aq -f name=furkan-app) ]; then
-                        sudo docker rm -f furkan-app
-                    fi
-                    if [ $(sudo docker ps -aq -f name=furkan-nginx) ]; then
-                        sudo docker rm -f furkan-nginx
-                    fi
+                    sudo docker ps -aq -f name=furkan-app | xargs -r sudo docker rm -f
+                    sudo docker ps -aq -f name=furkan-nginx | xargs -r sudo docker rm -f
                     '''
                 }
             }
@@ -60,11 +58,14 @@ pipeline {
         stage('Deploy App') {
             steps {
                 script {
-                    // Deploy the application using docker run and attach to the custom network
                     sh '''
                     sudo docker run -d --name furkan-app \
                         --network furkan-network \
-                        --env-file .env \
+                        -e DB_HOST=$DB_HOST \
+                        -e DB_USER=$DB_USER \
+                        -e DB_PASSWORD=$DB_PASSWORD \
+                        -e DB_NAME=$DB_NAME \
+                        -e PORT=$PORT \
                         -p 8081:8080 \
                         $IMAGE_NAME:latest
                     '''
@@ -75,7 +76,6 @@ pipeline {
         stage('Deploy Nginx') {
             steps {
                 script {
-                    // Deploy Nginx as reverse proxy, mount the config file, and expose port 80
                     sh '''
                     sudo docker run -d --name furkan-nginx \
                         --network furkan-network \
