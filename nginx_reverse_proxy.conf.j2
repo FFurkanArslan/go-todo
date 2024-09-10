@@ -3,7 +3,7 @@ server {
     server_name ${SERVER_NAME};
 
     location / {
-        proxy_pass http://furkan-backend:4040;
+        proxy_pass http://furkan-app:4040;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
     }
