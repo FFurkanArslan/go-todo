@@ -4,9 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/go-sql-driver/mysql"
 	"github.com/ichtrojan/thoth"
-	"github.com/joho/godotenv/autoload"
 	"os"
 )
 
