@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'slave' }
 
     environment {
         DOCKER_REGISTRY_CREDENTIALS = credentials('docker-registry-credentials')
