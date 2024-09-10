@@ -14,10 +14,21 @@ pipeline {
             }
         }
 
+        stage('Copy .env from Backend Instance') {
+            steps {
+                script {
+                    // Copy .env file from backend instance to Jenkins workspace
+                    sh '''
+                    scp quiblord@furkan-backend:/opt/go-todo/.env .
+                    '''
+                }
+            }
+        }
+
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image for the application with sudo
+                    // Build the Docker image for the application
                     sh 'sudo docker build -t $IMAGE_NAME:latest .'
                 }
             }
@@ -26,17 +37,17 @@ pipeline {
         stage('Login to Docker Registry') {
             steps {
                 script {
-                    // Log in to the Docker registry with sudo
+                    // Log in to the Docker registry
                     sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | sudo docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
                 }
             }
         }
 
-        stage('Check .env file') {
+        stage('Push to Docker Registry') {
             steps {
                 script {
-                    // Verify the existence of the .env file
-                    sh 'ls -l .env || echo ".env file not found!"'
+                    // Push the Docker image to Docker Registry
+                    sh 'sudo docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -44,7 +55,7 @@ pipeline {
         stage('Deploy App') {
             steps {
                 script {
-                    // Deploy the application using docker run with sudo and attach to the custom network
+                    // Deploy the application using docker run and attach to the custom network
                     sh '''
                     sudo docker run -d --name furkan-app \
                         --network furkan-network \
@@ -59,7 +70,7 @@ pipeline {
         stage('Deploy Nginx') {
             steps {
                 script {
-                    // Deploy Nginx as reverse proxy with sudo, mount the config file, and expose port 80
+                    // Deploy Nginx as reverse proxy, mount the config file, and expose port 80
                     sh '''
                     sudo docker run -d --name furkan-nginx \
                         --network furkan-network \
