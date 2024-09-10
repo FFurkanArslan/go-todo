@@ -17,7 +17,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    sh 'docker build -t $IMAGE_NAME:latest .'
+                    sh 'sudo docker build -t $IMAGE_NAME:latest .'
                 }
             }
         }
@@ -25,7 +25,7 @@ pipeline {
         stage('Login to Docker Registry') {
             steps {
                 script {
-                    sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
+                    sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | sudo docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
                 }
             }
         }
@@ -33,7 +33,7 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 script {
-                    sh 'docker push $IMAGE_NAME:latest'
+                    sh 'sudo docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -41,7 +41,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'docker-compose up -d'
+                    sh 'sudo docker-compose up -d'
                 }
             }
         }
