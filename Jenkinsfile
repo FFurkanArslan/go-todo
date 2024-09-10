@@ -71,15 +71,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Cleanup') {
-            steps {
-                script {
-                    // Optionally, you can add cleanup commands if needed
-                    // For example, remove old images or containers
-                    sh 'sudo docker system prune -f'
-                }
-            }
-        }
     }
 }
