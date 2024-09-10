@@ -71,7 +71,8 @@ pipeline {
                         string(credentialsId: 'db-user', variable: 'DB_USER'),
                         string(credentialsId: 'db-password', variable: 'DB_PASS'),
                         string(credentialsId: 'db-name', variable: 'DB_NAME'),
-                        string(credentialsId: 'port', variable: 'PORT')
+                        string(credentialsId: 'port', variable: 'PORT'),
+                        string(credentialsId: 'backend-instance-ip', variable: 'APP_INSTANCE_IP')
                     ]) {
                         sh '''
                         export DB_HOST=${DB_HOST}
@@ -79,9 +80,12 @@ pipeline {
                         export DB_PASS=${DB_PASS}
                         export DB_NAME=${DB_NAME}
                         export PORT=${PORT}
-                        export IMAGE_NAME=${IMAGE_NAME}
                         export APP_INSTANCE_IP=${APP_INSTANCE_IP}
-                        
+                        export IMAGE_NAME=${IMAGE_NAME}
+        
+                        # Substitute the APP_INSTANCE_IP in the Nginx configuration
+                        envsubst < /go-todo/nginx.conf.template > /etc/nginx/nginx.conf
+        
                         sudo -E docker-compose -f docker-compose.yml down
                         sudo -E docker-compose -f docker-compose.yml up -d --build
                         '''
