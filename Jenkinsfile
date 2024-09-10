@@ -84,7 +84,7 @@ pipeline {
                         export IMAGE_NAME=${IMAGE_NAME}
         
                          # Substitute the APP_INSTANCE_IP in the Nginx configuration
-                        sudo envsubst < /opt/go-todo/nginx.conf.template > /etc/nginx/nginx.conf
+                        sudo envsubst < ./nginx.conf.template > /etc/nginx/nginx.conf
         
                         # Restart Nginx to apply new configuration
                         sudo systemctl restart nginx
