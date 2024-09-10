@@ -14,17 +14,6 @@ services:
     networks:
       - furkan-network
 
-  nginx:
-    image: nginx:alpine
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf
-    depends_on:
-      - app
-    networks:
-      - furkan-network
-
 networks:
   furkan-network:
     driver: bridge
