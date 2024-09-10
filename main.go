@@ -13,14 +13,17 @@ func main() {
 	logger, _ := thoth.Init("log")
 
 	port := os.Getenv("PORT")
-
 	if port == "" {
 		logger.Log(errors.New("PORT not set in environment"))
 		log.Fatal("PORT not set in environment")
 	}
 
-	err := http.ListenAndServe(":"+port, routes.Init())
+	// You might want to log these for debugging
+	log.Printf("DB_HOST: %s", os.Getenv("DB_HOST"))
+	log.Printf("DB_USER: %s", os.Getenv("DB_USER"))
+	log.Printf("DB_NAME: %s", os.Getenv("DB_NAME"))
 
+	err := http.ListenAndServe(":"+port, routes.Init())
 	if err != nil {
 		logger.Log(err)
 		log.Fatal(err)
