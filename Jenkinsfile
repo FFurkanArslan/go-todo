@@ -5,6 +5,12 @@ pipeline {
         DOCKER_REGISTRY_CREDENTIALS = credentials('docker-registry-credentials')
         REGISTRY = 'docker.io/ffurkanarslan'
         IMAGE_NAME = "${REGISTRY}/furkan-app"
+        // Add other environment variables if needed
+        DB_HOST = credentials('db-host')
+        DB_USER = credentials('db-user')
+        DB_PASSWORD = credentials('db-password')
+        DB_NAME = credentials('db-name')
+        PORT = credentials('port')
     }
 
     stages {
@@ -57,29 +63,29 @@ pipeline {
         }
 
         stage('Deploy with Docker Compose') {
-    steps {
-        script {
-            // Export environment variables
-            withCredentials([
-                string(credentialsId: 'db-host', variable: 'DB_HOST'),
-                string(credentialsId: 'db-user', variable: 'DB_USER'),
-                string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
-                string(credentialsId: 'db-name', variable: 'DB_NAME'),
-                string(credentialsId: 'port', variable: 'PORT')
-            ]) {
-                sh '''
-                export DB_HOST=$DB_HOST
-                export DB_USER=$DB_USER
-                export DB_PASSWORD=$DB_PASSWORD
-                export DB_NAME=$DB_NAME
-                export PORT=$PORT
+            steps {
+                script {
+                    // Export environment variables
+                    withCredentials([
+                        string(credentialsId: 'db-host', variable: 'DB_HOST'),
+                        string(credentialsId: 'db-user', variable: 'DB_USER'),
+                        string(credentialsId: 'db-password', variable: 'DB_PASSWORD'),
+                        string(credentialsId: 'db-name', variable: 'DB_NAME'),
+                        string(credentialsId: 'port', variable: 'PORT')
+                    ]) {
+                        sh '''
+                        export DB_HOST=$DB_HOST
+                        export DB_USER=$DB_USER
+                        export DB_PASSWORD=$DB_PASSWORD
+                        export DB_NAME=$DB_NAME
+                        export PORT=$PORT
 
-                sudo docker-compose -f docker-compose.yml down
-                sudo docker-compose -f docker-compose.yml up -d
-                '''
+                        sudo docker-compose -f docker-compose.yml down
+                        sudo docker-compose -f docker-compose.yml up -d
+                        '''
+                    }
+                }
             }
         }
     }
-}
-
 }
