@@ -4,34 +4,72 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/ichtrojan/thoth"
+	_ "github.com/joho/godotenv/autoload"
+	"log"
 	"os"
 )
 
 func Database() *sql.DB {
-    logger, _ := thoth.Init("log")
+	logger, _ := thoth.Init("log")
 
-    user := os.Getenv("DB_USER")
-    pass := os.Getenv("DB_PASS")
-    host := os.Getenv("DB_HOST")
-    dbName := os.Getenv("DB_NAME")
+	user, exist := os.LookupEnv("DB_USER")
 
-    credentials := fmt.Sprintf("%s:%s@tcp(%s:3306)/%s?charset=utf8&parseTime=True", user, pass, host, dbName)
-    
-    logger.Log(errors.New(fmt.Sprintf("Attempting to connect to database at %s", host)))
+	if !exist {
+		logger.Log(errors.New("DB_USER not set in .env"))
+		log.Fatal("DB_USER not set in .env")
+	}
 
-    database, err := sql.Open("mysql", credentials)
-    if err != nil {
-        logger.Log(errors.New(fmt.Sprintf("Failed to open database: %v", err)))
-        return nil
-    }
+	pass, exist := os.LookupEnv("DB_PASS")
 
-    err = database.Ping()
-    if err != nil {
-        logger.Log(errors.New(fmt.Sprintf("Failed to ping database: %v", err)))
-        return nil
-    }
+	if !exist {
+		logger.Log(errors.New("DB_PASS not set in .env"))
+		log.Fatal("DB_PASS not set in .env")
+	}
 
-    logger.Log(errors.New("Database Connection Successful"))
-    return database
+	host, exist := os.LookupEnv("DB_HOST")
+
+	if !exist {
+		logger.Log(errors.New("DB_HOST not set in .env"))
+		log.Fatal("DB_HOST not set in .env")
+	}
+
+	credentials := fmt.Sprintf("%s:%s@(%s:3306)/?charset=utf8&parseTime=True", user, pass, host)
+
+	database, err := sql.Open("mysql", credentials)
+
+	if err != nil {
+		logger.Log(err)
+		log.Fatal(err)
+	} else {
+		fmt.Println("Database Connection Successful")
+	}
+
+	_, err = database.Exec(`CREATE DATABASE gotodo`)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = database.Exec(`USE gotodo`)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	_, err = database.Exec(`
+		CREATE TABLE todos (
+		    id INT AUTO_INCREMENT,
+		    item TEXT NOT NULL,
+		    completed BOOLEAN DEFAULT FALSE,
+		    PRIMARY KEY (id)
+		);
+	`)
+
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return database
 }
