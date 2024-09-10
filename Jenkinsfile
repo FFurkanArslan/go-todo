@@ -17,8 +17,8 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image for the application
-                    sh 'docker build -t $IMAGE_NAME:latest .'
+                    // Build the Docker image for the application with sudo
+                    sh 'sudo docker build -t $IMAGE_NAME:latest .'
                 }
             }
         }
@@ -26,8 +26,8 @@ pipeline {
         stage('Login to Docker Registry') {
             steps {
                 script {
-                    // Log in to the Docker registry
-                    sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
+                    // Log in to the Docker registry with sudo
+                    sh 'echo $DOCKER_REGISTRY_CREDENTIALS_PSW | sudo docker login -u $DOCKER_REGISTRY_CREDENTIALS_USR --password-stdin'
                 }
             }
         }
@@ -35,8 +35,8 @@ pipeline {
         stage('Push to Docker Registry') {
             steps {
                 script {
-                    // Push the Docker image to Docker Registry
-                    sh 'docker push $IMAGE_NAME:latest'
+                    // Push the Docker image to Docker Registry with sudo
+                    sh 'sudo docker push $IMAGE_NAME:latest'
                 }
             }
         }
@@ -44,9 +44,9 @@ pipeline {
         stage('Deploy App') {
             steps {
                 script {
-                    // Deploy the application using docker run and attach to the custom network
+                    // Deploy the application using docker run with sudo and attach to the custom network
                     sh '''
-                    docker run -d --name furkan-app \
+                    sudo docker run -d --name furkan-app \
                         --network furkan-network \
                         --env-file .env \
                         -p 8081:8080 \
@@ -59,9 +59,9 @@ pipeline {
         stage('Deploy Nginx') {
             steps {
                 script {
-                    // Deploy Nginx as reverse proxy, mount the config file, and expose port 80
+                    // Deploy Nginx as reverse proxy with sudo, mount the config file, and expose port 80
                     sh '''
-                    docker run -d --name furkan-nginx \
+                    sudo docker run -d --name furkan-nginx \
                         --network furkan-network \
                         -v $(pwd)/nginx_reverse_proxy.conf:/etc/nginx/conf.d/default.conf \
                         -p 80:80 \
