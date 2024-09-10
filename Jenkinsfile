@@ -43,11 +43,34 @@ pipeline {
             }
         }
 
-        stage('Deploy with Docker Compose') {
+        stage('Deploy App') {
             steps {
                 script {
-                    // Deploy using Docker Compose
-                    sh 'sudo docker-compose -f docker-compose.yml up -d'
+                    // Stop and remove any existing container
+                    sh 'sudo docker rm -f furkan-app || true'
+
+                    // Run the new Docker container
+                    sh '''
+                    sudo docker run -d --name furkan-app --network furkan-network \
+                    -e DB_HOST=**** -e DB_USER=**** -e DB_PASSWORD=**** -e DB_NAME=**** \
+                    -e PORT=8080 -p 8081:8080 $IMAGE_NAME:latest
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy Nginx') {
+            steps {
+                script {
+                    // Stop and remove any existing Nginx container
+                    sh 'sudo docker rm -f furkan-nginx || true'
+
+                    // Run the Nginx container
+                    sh '''
+                    sudo docker run -d --name furkan-nginx --network furkan-network \
+                    -v /home/quiblord/workspace/todo/app/pipeline/nginx_reverse_proxy.conf.j2:/etc/nginx/conf.d/default.conf \
+                    -p 80:80 nginx:alpine
+                    '''
                 }
             }
         }
