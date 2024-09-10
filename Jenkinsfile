@@ -83,14 +83,28 @@ pipeline {
                         export APP_INSTANCE_IP=${APP_INSTANCE_IP}
                         export IMAGE_NAME=${IMAGE_NAME}
         
-                         # Substitute the APP_INSTANCE_IP in the Nginx configuration
-                        sudo envsubst < ./nginx.conf.template > /etc/nginx/nginx.conf
+                         # Create a temporary file for Nginx config
+                        TEMP_NGINX_CONF=$(mktemp)
+        
+                        # Process the Nginx configuration template
+                        envsubst < /opt/go-todo/nginx_reverse_proxy.conf.j2 > $TEMP_NGINX_CONF
+        
+                        # Copy the temporary file to the actual Nginx configuration path
+                        sudo cp $TEMP_NGINX_CONF /etc/nginx/nginx.conf
+        
+                        # Set correct permissions for the new config file
+                        sudo chown root:root /etc/nginx/nginx.conf
+                        sudo chmod 644 /etc/nginx/nginx.conf
         
                         # Restart Nginx to apply new configuration
                         sudo systemctl restart nginx
         
+                        # Bring down any existing containers and bring up new ones
                         sudo -E docker-compose -f docker-compose.yml down
                         sudo -E docker-compose -f docker-compose.yml up -d --build
+        
+                        # Clean up the temporary file
+                        rm $TEMP_NGINX_CONF
                         '''
                     }
                 }
