@@ -19,4 +19,8 @@ COPY views/ ./views/
 
 EXPOSE 8080
 
-CMD ["./main"]
+# Use an entrypoint script to set environment variables
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
