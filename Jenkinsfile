@@ -73,11 +73,11 @@ pipeline {
                         string(credentialsId: 'port', variable: 'PORT')
                     ]) {
                         sh '''
-                        export DB_HOST=$DB_HOST
-                        export DB_USER=$DB_USER
-                        export DB_PASS=$DB_PASSWORD
-                        export DB_NAME=$DB_NAME
-                        export PORT=$PORT
+                        echo "DB_HOST=${DB_HOST}" > .env
+                        echo "DB_USER=${DB_USER}" >> .env
+                        echo "DB_PASS=${DB_PASS}" >> .env
+                        echo "DB_NAME=${DB_NAME}" >> .env
+                        echo "PORT=${PORT}" >> .env
         
                         sudo docker-compose -f docker-compose.yml down
                         sudo docker-compose -f docker-compose.yml up -d
