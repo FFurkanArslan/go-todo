@@ -65,7 +65,6 @@ pipeline {
         stage('Deploy with Docker Compose') {
             steps {
                 script {
-                    // Export environment variables
                     withCredentials([
                         string(credentialsId: 'db-host', variable: 'DB_HOST'),
                         string(credentialsId: 'db-user', variable: 'DB_USER'),
@@ -79,7 +78,7 @@ pipeline {
                         export DB_PASSWORD=$DB_PASSWORD
                         export DB_NAME=$DB_NAME
                         export PORT=$PORT
-
+        
                         sudo docker-compose -f docker-compose.yml down
                         sudo docker-compose -f docker-compose.yml up -d
                         '''
