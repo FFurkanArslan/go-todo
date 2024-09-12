@@ -23,7 +23,6 @@ func main() {
 	log.Printf("DB_USER: %s", os.Getenv("DB_USER"))
 	log.Printf("DB_NAME: %s", os.Getenv("DB_NAME"))
 	log.Printf("hallo liebe leute")
-	log.printf("hallo liebe leute")
 	err := http.ListenAndServe(":"+port, routes.Init())
 	if err != nil {
 		logger.Log(err)
